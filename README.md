@@ -1,132 +1,171 @@
-# CLAUDE.md
+# Karpathy-Inspired Claude Code Guidelines
 
-Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
+> Check out my new project [Multica](https://github.com/multica-ai/multica) — an open-source platform for running and managing coding agents with reusable skills.
+>
+> Follow me on X: [https://x.com/jiayuan_jy](https://x.com/jiayuan_jy)
 
-**Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
+A single `CLAUDE.md` file to improve Claude Code behavior, derived from [Andrej Karpathy's observations](https://x.com/karpathy/status/2015883857489522876) on LLM coding pitfalls.
 
-## 1. Think Before Coding
+English | [简体中文](./README.zh.md)
+
+## The Problems
+
+From Andrej's post:
+
+> "The models make wrong assumptions on your behalf and just run along with them without checking. They don't manage their confusion, don't seek clarifications, don't surface inconsistencies, don't present tradeoffs, don't push back when they should."
+
+> "They really like to overcomplicate code and APIs, bloat abstractions, don't clean up dead code... implement a bloated construction over 1000 lines when 100 would do."
+
+> "They still sometimes change/remove comments and code they don't sufficiently understand as side effects, even if orthogonal to the task."
+
+## The Solution
+
+Four principles in one file that directly address these issues:
+
+| Principle | Addresses |
+|-----------|-----------|
+| **Think Before Coding** | Wrong assumptions, hidden confusion, missing tradeoffs |
+| **Simplicity First** | Overcomplication, bloated abstractions |
+| **Surgical Changes** | Orthogonal edits, touching code you shouldn't |
+| **Goal-Driven Execution** | Leverage through tests-first, verifiable success criteria |
+
+## The Four Principles in Detail
+
+### 1. Think Before Coding
 
 **Don't assume. Don't hide confusion. Surface tradeoffs.**
 
-Before implementing:
-- State your assumptions explicitly. If uncertain, ask.
-- If multiple interpretations exist, present them - don't pick silently.
-- If a simpler approach exists, say so. Push back when warranted.
-- If something is unclear, stop. Name what's confusing. Ask.
+LLMs often pick an interpretation silently and run with it. This principle forces explicit reasoning:
 
-## 2. Simplicity First
+- **State assumptions explicitly** — If uncertain, ask rather than guess
+- **Present multiple interpretations** — Don't pick silently when ambiguity exists
+- **Push back when warranted** — If a simpler approach exists, say so
+- **Stop when confused** — Name what's unclear and ask for clarification
+
+### 2. Simplicity First
 
 **Minimum code that solves the problem. Nothing speculative.**
 
-- No features beyond what was asked.
-- No abstractions for single-use code.
-- No "flexibility" or "configurability" that wasn't requested.
-- No error handling for impossible scenarios.
-- If you write 200 lines and it could be 50, rewrite it.
+Combat the tendency toward overengineering:
 
-Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+- No features beyond what was asked
+- No abstractions for single-use code
+- No "flexibility" or "configurability" that wasn't requested
+- No error handling for impossible scenarios
+- If 200 lines could be 50, rewrite it
 
-## 3. Surgical Changes
+**The test:** Would a senior engineer say this is overcomplicated? If yes, simplify.
+
+### 3. Surgical Changes
 
 **Touch only what you must. Clean up only your own mess.**
 
 When editing existing code:
-- Don't "improve" adjacent code, comments, or formatting.
-- Don't refactor things that aren't broken.
-- Match existing style, even if you'd do it differently.
-- If you notice unrelated dead code, mention it - don't delete it.
+
+- Don't "improve" adjacent code, comments, or formatting
+- Don't refactor things that aren't broken
+- Match existing style, even if you'd do it differently
+- If you notice unrelated dead code, mention it — don't delete it
 
 When your changes create orphans:
-- Remove imports/variables/functions that YOUR changes made unused.
-- Don't remove pre-existing dead code unless asked.
 
-The test: Every changed line should trace directly to the user's request.
+- Remove imports/variables/functions that YOUR changes made unused
+- Don't remove pre-existing dead code unless asked
 
-## 4. Goal-Driven Execution
+**The test:** Every changed line should trace directly to the user's request.
+
+### 4. Goal-Driven Execution
 
 **Define success criteria. Loop until verified.**
 
-Transform tasks into verifiable goals:
-- "Add validation" → "Write tests for invalid inputs, then make them pass"
-- "Fix the bug" → "Write a test that reproduces it, then make it pass"
-- "Refactor X" → "Ensure tests pass before and after"
+Transform imperative tasks into verifiable goals:
+
+| Instead of... | Transform to... |
+|--------------|-----------------|
+| "Add validation" | "Write tests for invalid inputs, then make them pass" |
+| "Fix the bug" | "Write a test that reproduces it, then make it pass" |
+| "Refactor X" | "Ensure tests pass before and after" |
 
 For multi-step tasks, state a brief plan:
+
 ```
 1. [Step] → verify: [check]
 2. [Step] → verify: [check]
 3. [Step] → verify: [check]
 ```
 
-Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+Strong success criteria let the LLM loop independently. Weak criteria ("make it work") require constant clarification.
 
-## 5. No Closing Colons (Korean Output)
+## Install
 
-**End Korean sentences with a period, not a colon.**
+**Option A: Claude Code Plugin (recommended)**
 
-When the user writes in Korean, your output is also Korean:
-- Don't end sentences with `:` even if the next line is a list or example.
-- LLMs trained on English docs leak the colon habit into Korean. Catch it.
-- The test: every Korean sentence terminator should be `.`, `?`, or `!` — not `:`.
-- Colons are fine inside code, key-value pairs, or labels. Not as sentence enders.
+From within Claude Code, first add the marketplace:
+```
+/plugin marketplace add forrestchang/andrej-karpathy-skills
+```
 
-## 6. File Header Comments in Korean
+Then install the plugin:
+```
+/plugin install andrej-karpathy-skills@karpathy-skills
+```
 
-**First line of every new source file: a one-line Korean comment stating its role.**
+This installs the guidelines as a Claude Code plugin, making the skill available across all your projects.
 
-When creating a new file:
-- TypeScript/JavaScript: `// 사용자 인증 상태를 관리하는 Context Provider`
-- Python: `# KIS API 호출을 비동기로 래핑하는 클라이언트`
-- SQL: `-- 일별 집계 결과를 저장하는 머티리얼라이즈드 뷰`
-- Place it directly under required directives (`'use client'`, `'use server'`, shebang).
-- Skip config files (`*.config.ts`, `package.json`, etc.).
+**Option B: CLAUDE.md (per-project)**
 
-Why: agents read files selectively, not whole codebases. A one-line Korean header gives instant context so the next session (human or agent) can navigate without re-reading the entire file.
+New project:
+```bash
+curl -o CLAUDE.md https://raw.githubusercontent.com/forrestchang/andrej-karpathy-skills/main/CLAUDE.md
+```
 
-## 7. Plan + Checklist + Context Notes
+Existing project (append):
+```bash
+echo "" >> CLAUDE.md
+curl https://raw.githubusercontent.com/forrestchang/andrej-karpathy-skills/main/CLAUDE.md >> CLAUDE.md
+```
 
-**Before any non-trivial task, produce three artifacts. Don't start coding without them.**
+## Using with Cursor
 
-- **Plan** — what we're building and why.
-- **Checklist** (`checklist.md`) — concrete tasks as checkboxes. Tick as you go.
-- **Context Notes** (`context-notes.md`) — decisions made during the work and the reasoning behind them. Append continuously.
+This repository includes a committed Cursor project rule ([`.cursor/rules/karpathy-guidelines.mdc`](.cursor/rules/karpathy-guidelines.mdc)) so the same guidelines apply when you open the project in Cursor. See **[CURSOR.md](CURSOR.md)** for setup, using the rule in other projects, and how this relates to Claude Code.
 
-If the user gives only a plan and asks you to start coding, stop and ask: "Should I create the checklist and context notes first?" The next session — yours or someone else's — needs the notes to pick up where you left off without re-deriving every decision.
+## Key Insight
 
-## 8. Run Tests Before Marking Complete
+From Andrej:
 
-**If you touched code, run the tests before saying "done".**
+> "LLMs are exceptionally good at looping until they meet specific goals... Don't tell it what to do, give it success criteria and watch it go."
 
-- `npm test`, `pytest`, `cargo test`, whatever the project uses — run it.
-- If tests pass, report results. If they fail, fix and re-run.
-- No test setup? At minimum, verify the project builds/compiles.
-- Run tests proactively, before the user signals "끝", "완료", "다 됐어" — not after.
+The "Goal-Driven Execution" principle captures this: transform imperative instructions into declarative goals with verification loops.
 
-This is the step LLMs skip most often. Treat it as non-negotiable.
+## How to Know It's Working
 
-## 9. Semantic Commits
+These guidelines are working if you see:
 
-**Commit when one logical change is complete. Don't wait for the user to ask.**
+- **Fewer unnecessary changes in diffs** — Only requested changes appear
+- **Fewer rewrites due to overcomplication** — Code is simple the first time
+- **Clarifying questions come before implementation** — Not after mistakes
+- **Clean, minimal PRs** — No drive-by refactoring or "improvements"
 
-- The test: "Can I describe this commit in one sentence?" If yes, commit. If no, the changes are still mixed — split them.
-- Good: "auth 미들웨어 추가". Bad: "auth 추가하고 UI도 고치고 버그도 수정" (split into 3).
-- Don't accumulate 20 unrelated edits and lose the ability to roll back individually.
-- Don't commit just to commit — meaningful units only.
+## Customization
 
-Note: For solo prototypes or throwaway scripts, group commits loosely if it slows you down. The point is reversibility, not ceremony.
+These guidelines are designed to be merged with project-specific instructions. Add them to your existing `CLAUDE.md` or create a new one.
 
-## 10. Read Errors, Don't Guess
+For project-specific rules, add sections like:
 
-**Read the actual error/log line. Don't pattern-match from memory.**
+```markdown
+## Project-Specific Guidelines
 
-When something fails:
-- Read the full error message and stack trace.
-- Check the actual log output, not what you assume it should say.
-- Don't apply a "common fix" before confirming the cause.
-- If unclear, add a print/log to verify state — then fix.
+- Use TypeScript strict mode
+- All API endpoints must have tests
+- Follow the existing error handling patterns in `src/utils/errors.ts`
+```
 
-This is the step LLMs skip most often after "run tests". They guess from error keywords and apply the most-recent-pattern fix. That's how a one-line bug becomes a three-file refactor.
+## Tradeoff Note
 
----
+These guidelines bias toward **caution over speed**. For trivial tasks (simple typo fixes, obvious one-liners), use judgment — not every change needs the full rigor.
 
-**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+The goal is reducing costly mistakes on non-trivial work, not slowing down simple tasks.
+
+## License
+
+MIT
